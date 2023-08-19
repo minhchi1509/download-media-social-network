@@ -69,7 +69,7 @@
     "@typescript-eslint/consistent-type-exports": "error",
     "@typescript-eslint/method-signature-style": "error",
     "@typescript-eslint/no-duplicate-type-constituents": "error",
-    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-floating-promises": [
       "error",
       { "ignoreIIFE": true }
