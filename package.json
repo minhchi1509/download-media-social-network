@@ -13,7 +13,8 @@
     "*.{ts,tsx,js}": [
       "prettier --write .",
       "eslint --fix .",
-      "eslint ."
+      "eslint .",
+      "git add ."
     ]
   },
   "dependencies": {

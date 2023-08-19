@@ -31,12 +31,12 @@ const InstgramDownload = () => {
 
   return (
     <Box display="flex" flexDirection="column" gap={2}>
-      <Box display="flex" gap={3} alignItems="center">
+      {/* <Box display="flex" gap={3} alignItems="center">
         <Image src={InstagramLogo} alt="Instagram-Logo" width={8} height={8} />
         <Text fontSize="2xl" fontWeight="bold">
           Instagram
         </Text>
-      </Box>
+      </Box> */}
       <Alert status="warning" borderRadius={10}>
         <AlertIcon />
         Hãy đảm bảo rằng bạn đã đăng nhập tài khoản Instgram trên trình duyệt!

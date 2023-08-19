@@ -1,4 +1,5 @@
 import {
+  Image,
   Tab,
   TabList,
   TabPanel,
@@ -8,22 +9,27 @@ import {
 } from '@chakra-ui/react';
 
 import InstgramDownload from './components/InstgramDownload';
+import { FacebookLogo, InstagramLogo, TiktokLogo } from 'src/assets/images';
 
 const tabsConfig = [
   {
     label: 'Instagram',
+    logo: InstagramLogo,
     component: <InstgramDownload />
   },
   {
     label: 'Facebook',
+    logo: FacebookLogo,
     component: <></>
   },
   {
     label: 'Douyin',
+    logo: TiktokLogo,
     component: <></>
   },
   {
     label: 'Tiktok',
+    logo: TiktokLogo,
     component: <></>
   }
 ];
@@ -37,7 +43,15 @@ const Home = () => {
       <Tabs isFitted variant="enclosed" mt={2}>
         <TabList>
           {tabsConfig.map((tabs, index) => (
-            <Tab key={index}>{tabs.label}</Tab>
+            <Tab key={index} display="flex" gap={3} alignItems="center">
+              <Image
+                src={tabs.logo}
+                alt="Instagram-Logo"
+                width={5}
+                height={5}
+              />
+              {tabs.label}
+            </Tab>
           ))}
         </TabList>
         <TabPanels>

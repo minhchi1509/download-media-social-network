@@ -1,3 +1,5 @@
+import FacebookLogo from './facebook.png';
 import InstagramLogo from './instagram.png';
+import TiktokLogo from './tiktok.png';
 
-export { InstagramLogo };
+export { FacebookLogo, InstagramLogo, TiktokLogo };
