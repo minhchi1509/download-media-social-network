@@ -1,8 +1,10 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export const downloadMediaFile = (blobFile: Blob) => {
   const fileURL = URL.createObjectURL(blobFile);
   const downloadLink = document.createElement('a');
   downloadLink.href = fileURL;
-  downloadLink.download = 'minhchitest';
+  downloadLink.download = uuidv4();
   downloadLink.click();
   URL.revokeObjectURL(fileURL);
 };

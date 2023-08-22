@@ -8,6 +8,7 @@ import {
   Text
 } from '@chakra-ui/react';
 
+import FacebookDownload from './components/FacebookDownload';
 import InstgramDownload from './components/InstgramDownload';
 import { FacebookLogo, InstagramLogo, TiktokLogo } from 'src/assets/images';
 
@@ -20,7 +21,7 @@ const tabsConfig = [
   {
     label: 'Facebook',
     logo: FacebookLogo,
-    component: <></>
+    component: <FacebookDownload />
   },
   {
     label: 'Douyin',

@@ -1,16 +1,10 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import {
-  Alert,
-  AlertIcon,
-  Box,
-  Button,
-  Text,
-  useToast
-} from '@chakra-ui/react';
+import { Alert, AlertIcon, Box, Button } from '@chakra-ui/react';
 import { useFormik } from 'formik';
 import React from 'react';
 
 import Input from 'src/components/Input';
+import MediaCard from 'src/components/MediaCard';
 import Textarea from 'src/components/Textarea';
 import { useShowToast } from 'src/hooks/useShowToast';
 import { IForm } from 'src/interfaces/form-interfaces';
@@ -19,7 +13,7 @@ import {
   getInstagramAPIURL,
   getUnBlockedMediaUrl
 } from 'src/utils/common-utils';
-import { mediaFormValidation } from 'src/utils/validation-utils';
+import { instagramFormValidation } from 'src/utils/validation-utils';
 import { instagramURLRegex } from 'src/variables/constants';
 
 const InstgramDownload = () => {
@@ -80,7 +74,7 @@ const InstgramDownload = () => {
         apiURL: '',
         jsonData: ''
       },
-      validationSchema: mediaFormValidation,
+      validationSchema: instagramFormValidation,
       onSubmit: handleSubmitForm
     });
 
@@ -93,26 +87,22 @@ const InstgramDownload = () => {
   }, [values.postURL, touched.postURL, setFieldValue]);
 
   return (
-    <Box display="flex" flexDirection="column" gap={2}>
-      <Alert status="warning" borderRadius={10}>
+    <Box display="flex" flexDirection="column" gap={3}>
+      <Alert status="warning" borderRadius={10} mb={2}>
         <AlertIcon />
         Hãy đảm bảo rằng bạn đã đăng nhập tài khoản Instgram trên trình duyệt!
       </Alert>
-      <Text fontSize="medium" fontWeight="medium">
-        Bước 1: Dán đường link bài viết vào đây. Hãy đảm bảo link bài viết là
-        hợp lệ
-      </Text>
       <Input
+        label="Bước 1: Dán đường link bài viết vào đây. Hãy đảm bảo link bài viết là
+        hợp lệ"
         placeholder="Link bài viết"
         onChange={handleChange}
         name="postURL"
         value={values.postURL}
       />
-      <Text fontSize="medium" fontWeight="medium">
-        Bước 2: Mở đường link dưới đây
-      </Text>
       <Box display="flex" gap={2}>
         <Input
+          label="Bước 2: Mở đường link dưới đây"
           name="apiURL"
           value={values.apiURL}
           onChange={() => {}}
@@ -126,29 +116,30 @@ const InstgramDownload = () => {
           Mở
         </Button>
       </Box>
-      <Text fontSize="medium" fontWeight="medium">
-        Bước 3: Dán toàn bộ nội dung của link vừa mở vào đây. Hãy đảm bảo dán
-        đầy đủ tất cả nội dung từ link đó!
-      </Text>
       <Textarea
+        label="Bước 3: Dán toàn bộ nội dung của link vừa mở vào đây. Hãy đảm bảo dán
+        đầy đủ tất cả nội dung từ link đó!"
         name="jsonData"
         placeholder="Dán nội dung vào đây"
         resize="none"
         height={150}
-        onChange={handleChange('jsonData')}
+        onChange={handleChange}
         errorText={touched.jsonData && errors.jsonData}
       />
       <Button colorScheme="purple" onClick={() => handleSubmit()}>
         Lấy dữ liệu
       </Button>
-      {/* <video
-        src="https://ig.minhchiptit.workers.dev/https://scontent.cdninstagram.com/v/t66.30100-16/119609024_828169318971893_7250765436795760877_n.mp4?efg=eyJxZV9ncm91cHMiOiJbXCJpZ19wcm9ncmVzc2l2ZV91cmxnZW4ucHJvZHVjdF90eXBlLmNsaXBzXCJdIn0&_nc_ht=z-p4-instagram.fhan5-2.fna.fbcdn.net&_nc_cat=105&_nc_ohc=W_inkuOVaMEAX_RXdVE&edm=AABBvjUBAAAA&ccb=7-5&oh=00_AfAtiJXpHb2IVrVEeTP5J8AWlrb8LG2ngFlr5qbR1H9X9w&oe=64E3687A&_nc_sid=4f4799"
-        height={360}
-        width={360}
-        style={{ borderRadius: '16px' }}
-        controls
-        controlsList="nodownload"
-      ></video> */}
+      <Box
+        display="flex"
+        gap={3}
+        mt={3}
+        flexWrap="wrap"
+        justifyContent="space-evenly"
+      >
+        {mediaList.map((item, index) => (
+          <MediaCard mediaItem={item} key={index} />
+        ))}
+      </Box>
     </Box>
   );
 };
