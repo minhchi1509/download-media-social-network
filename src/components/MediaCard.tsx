@@ -2,28 +2,40 @@ import { AspectRatio, Box, Button, Image } from '@chakra-ui/react';
 import React from 'react';
 
 import { useShowToast } from 'src/hooks/useShowToast';
-import { IMediaDetail } from 'src/interfaces/media-interfaces';
-import { downloadMediaFile } from 'src/utils/common-utils';
+import { IMedia, IMediaDetail } from 'src/interfaces/media-interfaces';
+import { downloadMediaFile } from 'src/utils/media-utils';
 
 interface IMediaCardProps {
-  mediaItem: IMediaDetail;
+  mediaItem: IMedia;
 }
 
 const MediaCard: React.FC<IMediaCardProps> = ({ mediaItem }) => {
   const { showToast } = useShowToast();
-  const [loading, setLoading] = React.useState<boolean>(false);
+  const haveAudio = mediaItem.audio;
+  const [isDownloadingImageOrMp4, setIsDownloadingImageOrMp4] =
+    React.useState<boolean>(false);
+  const [isDownloadingAudio, setIsDownloadingAudio] =
+    React.useState<boolean>(false);
 
-  const handleDownload = async () => {
+  const handleDownload = async (
+    isAudio: boolean,
+    mediaDetail: IMediaDetail
+  ) => {
     try {
-      setLoading(true);
-      const response = await fetch(mediaItem.url);
-      const blobFile = await response.blob();
-      downloadMediaFile(blobFile);
+      isAudio ? setIsDownloadingAudio(true) : setIsDownloadingImageOrMp4(true);
+      if (mediaDetail.isDirectlyDownloadFromURL) {
+        downloadMediaFile(mediaDetail.url);
+      } else {
+        const response = await fetch(mediaDetail.url);
+        const blobFile = await response.blob();
+        downloadMediaFile(blobFile);
+      }
       showToast('success', 'Tải xuống thành công!');
     } catch (error) {
       showToast('error', 'Đã có lỗi xảy ra trong quá trình tải!');
     } finally {
-      setLoading(false);
+      setIsDownloadingAudio(false);
+      setIsDownloadingImageOrMp4(false);
     }
   };
 
@@ -42,19 +54,32 @@ const MediaCard: React.FC<IMediaCardProps> = ({ mediaItem }) => {
     >
       <AspectRatio height={360} ratio={1}>
         {mediaItem.type === 'image' ? (
-          <Image src={mediaItem.url} objectFit="cover" />
+          <Image src={mediaItem.image?.url} objectFit="cover" />
         ) : (
-          <video src={mediaItem.url} controls />
+          <video src={mediaItem.video?.url} controls />
         )}
       </AspectRatio>
-      <Box padding={3}>
+      <Box padding={3} display="flex" gap={2}>
         <Button
+          flex={1}
           colorScheme="facebook"
-          width="100%"
-          onClick={handleDownload}
-          isLoading={loading}
+          onClick={() =>
+            handleDownload(false, (mediaItem.image || mediaItem.video)!)
+          }
+          isLoading={isDownloadingImageOrMp4}
           loadingText="Đang tải xuống"
         >{`Tải ${mediaItem.type === 'image' ? 'ảnh' : 'video'}`}</Button>
+        {haveAudio && (
+          <Button
+            flex={1}
+            colorScheme="facebook"
+            onClick={() => handleDownload(true, mediaItem.audio!)}
+            isLoading={isDownloadingAudio}
+            loadingText="Đang tải xuống"
+          >
+            Tải MP3
+          </Button>
+        )}
       </Box>
     </Box>
   );

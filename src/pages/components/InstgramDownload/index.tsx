@@ -8,17 +8,17 @@ import MediaCard from 'src/components/MediaCard';
 import Textarea from 'src/components/Textarea';
 import { useShowToast } from 'src/hooks/useShowToast';
 import { IForm } from 'src/interfaces/form-interfaces';
-import { IMediaDetail } from 'src/interfaces/media-interfaces';
+import { IMedia } from 'src/interfaces/media-interfaces';
 import {
   getInstagramAPIURL,
   getUnBlockedMediaUrl
-} from 'src/utils/common-utils';
+} from 'src/utils/media-utils';
 import { instagramFormValidation } from 'src/utils/validation-utils';
 import { instagramURLRegex } from 'src/variables/constants';
 
 const InstgramDownload = () => {
   const { showToast } = useShowToast();
-  const [mediaList, setMediaList] = React.useState<IMediaDetail[]>([]);
+  const [mediaList, setMediaList] = React.useState<IMedia[]>([]);
 
   const handleSubmitForm = ({ jsonData }: IForm) => {
     try {
@@ -32,16 +32,19 @@ const InstgramDownload = () => {
         return;
       }
       if (data.carousel_media !== undefined) {
-        const medias: IMediaDetail[] = data.carousel_media.reduce(
-          (result: IMediaDetail[], currentMedia: any) => {
-            const isImageType = currentMedia.media_type === 1;
+        const medias: IMedia[] = data.carousel_media.reduce(
+          (result: IMedia[], currentMedia: any) => {
+            const mediaType = currentMedia.media_type === 1 ? 'image' : 'video';
             result.push({
-              type: isImageType ? 'image' : 'video',
-              url: getUnBlockedMediaUrl(
-                isImageType
-                  ? currentMedia.image_versions2.candidates[0].url
-                  : currentMedia.video_versions[0].url
-              )
+              type: mediaType,
+              [mediaType]: {
+                url: getUnBlockedMediaUrl(
+                  mediaType === 'image'
+                    ? currentMedia.image_versions2.candidates[0].url
+                    : currentMedia.video_versions[0].url
+                ),
+                isDirectlyDownloadFromURL: false
+              }
             });
             return result;
           },
@@ -49,15 +52,18 @@ const InstgramDownload = () => {
         );
         setMediaList(medias);
       } else {
-        const isImageType = data.media_type === 1;
+        const mediaType = data.media_type === 1 ? 'image' : 'video';
         setMediaList([
           {
-            type: isImageType ? 'image' : 'video',
-            url: getUnBlockedMediaUrl(
-              isImageType
-                ? data.image_versions2.candidates[0].url
-                : data.video_versions[0].url
-            )
+            type: mediaType,
+            [mediaType]: {
+              url: getUnBlockedMediaUrl(
+                mediaType === 'image'
+                  ? data.image_versions2.candidates[0].url
+                  : data.video_versions[0].url
+              ),
+              isDirectlyDownloadFromURL: false
+            }
           }
         ]);
       }
@@ -79,7 +85,7 @@ const InstgramDownload = () => {
     });
 
   React.useEffect(() => {
-    if (instagramURLRegex.test(values.postURL)) {
+    if (instagramURLRegex.test(values.postURL.trim())) {
       setFieldValue('apiURL', getInstagramAPIURL(values.postURL));
     } else {
       setFieldValue('apiURL', '');
@@ -112,6 +118,7 @@ const InstgramDownload = () => {
           colorScheme="teal"
           onClick={() => window.open(values.apiURL, '_blank')}
           isDisabled={!values.apiURL}
+          alignSelf="flex-end"
         >
           Mở
         </Button>

@@ -1,12 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 
-export const downloadMediaFile = (blobFile: Blob) => {
-  const fileURL = URL.createObjectURL(blobFile);
+export const downloadMediaFile = (file: Blob | string) => {
+  const fileURL = typeof file === 'string' ? file : URL.createObjectURL(file);
   const downloadLink = document.createElement('a');
   downloadLink.href = fileURL;
   downloadLink.download = uuidv4();
   downloadLink.click();
-  URL.revokeObjectURL(fileURL);
+  typeof file !== 'string' && URL.revokeObjectURL(fileURL);
 };
 
 export const getUnBlockedMediaUrl = (originUrl: any) => {

@@ -26,8 +26,8 @@ const RadioSelect: React.FC<IRadioSelectProps> = ({
   ...otherProps
 }) => {
   return (
-    <FormControl as="fieldset">
-      <FormLabel as="legend">{label}</FormLabel>
+    <FormControl isInvalid={!!errorText}>
+      <FormLabel>{label}</FormLabel>
       <RadioGroup {...otherProps}>
         <Stack
           direction={optionsDirection === 'horizontal' ? 'row' : 'column'}

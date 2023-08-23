@@ -1,35 +1,92 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { Alert, AlertIcon, Box, Button } from '@chakra-ui/react';
 import { useFormik } from 'formik';
 import React from 'react';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
+import { TickIcon } from 'src/assets/icons/index';
 import Input from 'src/components/Input';
 import RadioSelect from 'src/components/RadioSelect';
+import Textarea from 'src/components/Textarea';
+import { useShowToast } from 'src/hooks/useShowToast';
 import { IForm } from 'src/interfaces/form-interfaces';
+import { IDownloadFacebookMediaBodyRequest } from 'src/interfaces/media-interfaces';
+import { getDownloadFacebookMediaURL } from 'src/services/media-download-services';
 import { facebookFormValidation } from 'src/utils/validation-utils';
 import { postModeList } from 'src/variables/constants';
 
 const FacebookDownload = () => {
-  const handleSubmitForm = (values: IForm) => {
-    console.log(values);
+  const { showToast } = useShowToast();
+  const [isCopiedAPIUrl, setIsCopiedAPIUrl] = React.useState<boolean>(false);
+  const [isGettingData, setIsGettingData] = React.useState<boolean>(false);
+
+  const handleSubmitForm = async (values: IForm) => {
+    values.jsonData = values.jsonData.trim();
+    if (values.postMode === 'private' && !values.jsonData) {
+      setFieldError(
+        'jsonData',
+        'Vui lòng copy và paste toàn bộ nội dung của URL đã mở ở trình duyệt!'
+      );
+      return;
+    }
+    try {
+      setIsGettingData(true);
+      const body = new FormData();
+      body.append('q', values.postURL);
+      body.append('html', values.jsonData);
+      const response = await getDownloadFacebookMediaURL(body);
+      if (response.mess) {
+        throw errors;
+      }
+      console.log(response.data);
+      showToast('success', 'Lấy dữ liệu thành công!');
+    } catch (error) {
+      showToast('error', 'Đã xảy ra lỗi trong quá trình lấy dữ liệu!');
+    } finally {
+      setIsGettingData(false);
+    }
   };
 
-  const { values, handleChange, handleSubmit, touched, errors, setFieldValue } =
-    useFormik<IForm>({
-      initialValues: {
-        postURL: '',
-        postMode: undefined,
-        apiURL: '',
-        jsonData: ''
-      },
-      validationSchema: facebookFormValidation,
-      onSubmit: handleSubmitForm
+  const handleCopy = async (_text: string, isCopied: boolean) => {
+    setIsCopiedAPIUrl(isCopied);
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve('Done!');
+      }, 1500);
     });
+    setIsCopiedAPIUrl((prev) => !prev);
+  };
+
+  const {
+    values,
+    handleChange,
+    handleSubmit,
+    touched,
+    errors,
+    setFieldValue,
+    setFieldError
+  } = useFormik<IForm>({
+    initialValues: {
+      postURL: '',
+      postMode: undefined,
+      apiURL: '',
+      jsonData: ''
+    },
+    validationSchema: facebookFormValidation,
+    onSubmit: handleSubmitForm
+  });
+
+  React.useEffect(() => {
+    if (values.postMode === 'private' && values.postURL) {
+      setFieldValue('apiURL', `view-source:${values.postURL.trim()}`);
+    }
+  }, [values.postURL, setFieldValue, values.postMode]);
 
   return (
     <Box display="flex" flexDirection="column" gap={3}>
       <Alert status="warning" borderRadius={10} mb={2}>
         <AlertIcon />
-        Tính năng này chỉ áp dụng cho video. Hãy đảm bảo rằng bạn đã đăng nhập
+        Tính năng này áp dụng cho video/reels. Hãy đảm bảo rằng bạn đã đăng nhập
         Facebook trên trình duyệt!
       </Alert>
       <Input
@@ -50,15 +107,44 @@ const FacebookDownload = () => {
         errorText={touched.postMode && errors.postMode}
       />
       {values.postMode === 'private' && (
-        <Input
-          label="Bước 2: Mở đường link dưới đây"
-          name="apiURL"
-          value={values.apiURL}
-          onChange={() => {}}
-          isDisabled
-        />
+        <>
+          <Box display="flex" gap={2}>
+            <Input
+              label="Bước 2: Sao chép đường link dưới đây và mở nó trong tab mới"
+              name="apiURL"
+              value={values.apiURL}
+              onChange={() => {}}
+              isDisabled
+            />
+            <CopyToClipboard text={values.apiURL} onCopy={handleCopy}>
+              <Button
+                colorScheme="teal"
+                isDisabled={!values.apiURL}
+                alignSelf="flex-end"
+                {...(isCopiedAPIUrl ? { leftIcon: <TickIcon /> } : {})}
+              >
+                {isCopiedAPIUrl ? 'Đã sao chép' : 'Sao chép'}
+              </Button>
+            </CopyToClipboard>
+          </Box>
+          <Textarea
+            label="Bước 3: Dán toàn bộ nội dung của link vừa mở vào đây. Hãy đảm bảo dán
+          đầy đủ tất cả nội dung từ link đó!"
+            name="jsonData"
+            placeholder="Dán nội dung vào đây"
+            resize="none"
+            height={150}
+            onChange={handleChange}
+            errorText={touched.jsonData && errors.jsonData}
+          />
+        </>
       )}
-      <Button colorScheme="purple" onClick={() => handleSubmit()}>
+      <Button
+        colorScheme="purple"
+        onClick={() => handleSubmit()}
+        isLoading={isGettingData}
+        loadingText="Đang lấy dữ liệu"
+      >
         Lấy dữ liệu
       </Button>
     </Box>
