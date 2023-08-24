@@ -1,12 +1,12 @@
 export interface IMediaDetail {
-  url: string;
-  isDirectlyDownloadFromURL: boolean;
+  previewURL: string;
+  downloadURL: string;
 }
 export interface IMedia {
   type: 'image' | 'video';
   image?: IMediaDetail;
   video?: IMediaDetail;
-  audio?: IMediaDetail;
+  audio?: Pick<IMediaDetail, 'downloadURL'>;
 }
 
 export interface IDownloadFacebookMediaBodyRequest {

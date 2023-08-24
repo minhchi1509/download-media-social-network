@@ -6,12 +6,14 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 import { TickIcon } from 'src/assets/icons/index';
 import Input from 'src/components/Input';
+import MediaCard from 'src/components/MediaCard';
 import RadioSelect from 'src/components/RadioSelect';
 import Textarea from 'src/components/Textarea';
 import { useShowToast } from 'src/hooks/useShowToast';
 import { IForm } from 'src/interfaces/form-interfaces';
-import { IDownloadFacebookMediaBodyRequest } from 'src/interfaces/media-interfaces';
+import { IMedia } from 'src/interfaces/media-interfaces';
 import { getDownloadFacebookMediaURL } from 'src/services/media-download-services';
+import { formatFacebookMediaData } from 'src/utils/media-utils';
 import { facebookFormValidation } from 'src/utils/validation-utils';
 import { postModeList } from 'src/variables/constants';
 
@@ -19,6 +21,7 @@ const FacebookDownload = () => {
   const { showToast } = useShowToast();
   const [isCopiedAPIUrl, setIsCopiedAPIUrl] = React.useState<boolean>(false);
   const [isGettingData, setIsGettingData] = React.useState<boolean>(false);
+  const [mediaList, setMediaList] = React.useState<IMedia[]>([]);
 
   const handleSubmitForm = async (values: IForm) => {
     values.jsonData = values.jsonData.trim();
@@ -38,7 +41,7 @@ const FacebookDownload = () => {
       if (response.mess) {
         throw errors;
       }
-      console.log(response.data);
+      setMediaList([formatFacebookMediaData(response.data)]);
       showToast('success', 'Lấy dữ liệu thành công!');
     } catch (error) {
       showToast('error', 'Đã xảy ra lỗi trong quá trình lấy dữ liệu!');
@@ -81,6 +84,10 @@ const FacebookDownload = () => {
       setFieldValue('apiURL', `view-source:${values.postURL.trim()}`);
     }
   }, [values.postURL, setFieldValue, values.postMode]);
+
+  React.useEffect(() => {
+    setFieldValue('jsonData', '');
+  }, [values.postMode, setFieldValue]);
 
   return (
     <Box display="flex" flexDirection="column" gap={3}>
@@ -147,6 +154,17 @@ const FacebookDownload = () => {
       >
         Lấy dữ liệu
       </Button>
+      <Box
+        display="flex"
+        gap={3}
+        mt={3}
+        flexWrap="wrap"
+        justifyContent="space-evenly"
+      >
+        {mediaList.map((item, index) => (
+          <MediaCard mediaItem={item} key={index} />
+        ))}
+      </Box>
     </Box>
   );
 };

@@ -10,66 +10,35 @@ import { useShowToast } from 'src/hooks/useShowToast';
 import { IForm } from 'src/interfaces/form-interfaces';
 import { IMedia } from 'src/interfaces/media-interfaces';
 import {
-  getInstagramAPIURL,
-  getUnBlockedMediaUrl
+  formatInstagramMediaData,
+  getInstagramAPIURL
 } from 'src/utils/media-utils';
 import { instagramFormValidation } from 'src/utils/validation-utils';
 import { instagramURLRegex } from 'src/variables/constants';
 
 const InstgramDownload = () => {
   const { showToast } = useShowToast();
+  const [isGettingData, setIsGettingData] = React.useState<boolean>(false);
   const [mediaList, setMediaList] = React.useState<IMedia[]>([]);
 
-  const handleSubmitForm = ({ jsonData }: IForm) => {
+  const handleSubmitForm = async ({ jsonData }: IForm) => {
     try {
+      setIsGettingData(true);
       const data = JSON.parse(jsonData).items[0];
       if (
         !data.carousel_media &&
         !data.image_versions2.candidates[0].url &&
         !data.video_versions[0].url
       ) {
-        showToast('error', 'Lấy dữ liệu thất bại. Vui lòng kiểm tra lại!');
-        return;
+        throw errors;
       }
-      if (data.carousel_media !== undefined) {
-        const medias: IMedia[] = data.carousel_media.reduce(
-          (result: IMedia[], currentMedia: any) => {
-            const mediaType = currentMedia.media_type === 1 ? 'image' : 'video';
-            result.push({
-              type: mediaType,
-              [mediaType]: {
-                url: getUnBlockedMediaUrl(
-                  mediaType === 'image'
-                    ? currentMedia.image_versions2.candidates[0].url
-                    : currentMedia.video_versions[0].url
-                ),
-                isDirectlyDownloadFromURL: false
-              }
-            });
-            return result;
-          },
-          []
-        );
-        setMediaList(medias);
-      } else {
-        const mediaType = data.media_type === 1 ? 'image' : 'video';
-        setMediaList([
-          {
-            type: mediaType,
-            [mediaType]: {
-              url: getUnBlockedMediaUrl(
-                mediaType === 'image'
-                  ? data.image_versions2.candidates[0].url
-                  : data.video_versions[0].url
-              ),
-              isDirectlyDownloadFromURL: false
-            }
-          }
-        ]);
-      }
+      const mediaItems = await formatInstagramMediaData(data);
+      setMediaList(mediaItems);
       showToast('success', 'Lấy dữ liệu thành công!');
     } catch (error) {
       showToast('error', 'Lấy dữ liệu thất bại. Vui lòng kiểm tra lại!');
+    } finally {
+      setIsGettingData(false);
     }
   };
 
@@ -133,7 +102,12 @@ const InstgramDownload = () => {
         onChange={handleChange}
         errorText={touched.jsonData && errors.jsonData}
       />
-      <Button colorScheme="purple" onClick={() => handleSubmit()}>
+      <Button
+        colorScheme="purple"
+        onClick={() => handleSubmit()}
+        isLoading={isGettingData}
+        loadingText="Đang lấy dữ liệu"
+      >
         Lấy dữ liệu
       </Button>
       <Box
