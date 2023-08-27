@@ -1,8 +1,8 @@
 import { AspectRatio, Box, Button, Image } from '@chakra-ui/react';
 import React from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 import { IMedia } from 'src/interfaces/media-interfaces';
-import { downloadMediaFile } from 'src/utils/media-utils';
 
 interface IMediaCardProps {
   mediaItem: IMedia;
@@ -28,28 +28,36 @@ const MediaCard: React.FC<IMediaCardProps> = ({ mediaItem }) => {
       }}
     >
       <AspectRatio height={360} ratio={1}>
-        {mediaItem.type === 'image' ? (
+        {mediaItem.type === 'image' || mediaItem.type === 'videoNotPlay' ? (
           <Image src={previewURL} objectFit="cover" />
         ) : (
           <video src={previewURL} controls />
         )}
       </AspectRatio>
       <Box padding={3} display="flex" gap={2}>
-        <Button
-          flex={1}
-          colorScheme="facebook"
-          onClick={() => downloadMediaFile(downloadURL!)}
-        >{`Tải ${mediaItem.type === 'image' ? 'ảnh' : 'video'}`}</Button>
+        <a
+          href={downloadURL}
+          target="_blank"
+          download={uuidv4()}
+          rel="noreferrer"
+          style={{ flex: 1 }}
+        >
+          <Button width="100%" colorScheme="facebook">{`Tải ${
+            mediaItem.type === 'image' ? 'ảnh' : 'video'
+          }`}</Button>
+        </a>
         {haveAudio && (
-          <Button
-            flex={1}
-            colorScheme="facebook"
-            onClick={() =>
-              downloadMediaFile(mediaItem.audio?.downloadURL as string)
-            }
+          <a
+            href={mediaItem.audio?.downloadURL}
+            target="_blank"
+            download={uuidv4()}
+            rel="noreferrer"
+            style={{ flex: 1 }}
           >
-            Tải MP3
-          </Button>
+            <Button width="100%" colorScheme="facebook">
+              Tải MP3
+            </Button>
+          </a>
         )}
       </Box>
     </Box>

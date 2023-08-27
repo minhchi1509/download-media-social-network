@@ -8,8 +8,10 @@ import {
   Text
 } from '@chakra-ui/react';
 
+import DouyinDownload from './components/DouyinDownload';
 import FacebookDownload from './components/FacebookDownload';
 import InstgramDownload from './components/InstgramDownload';
+import TiktokDownload from './components/TiktokDownload';
 import { FacebookLogo, InstagramLogo, TiktokLogo } from 'src/assets/images';
 
 const tabsConfig = [
@@ -26,12 +28,12 @@ const tabsConfig = [
   {
     label: 'Douyin',
     logo: TiktokLogo,
-    component: <></>
+    component: <DouyinDownload />
   },
   {
     label: 'Tiktok',
     logo: TiktokLogo,
-    component: <></>
+    component: <TiktokDownload />
   }
 ];
 
@@ -41,7 +43,7 @@ const Home = () => {
       <Text textAlign="center" fontSize="5xl" fontWeight="bold">
         Trình tải xuống ảnh, video
       </Text>
-      <Tabs isFitted variant="enclosed" mt={2}>
+      <Tabs isFitted variant="soft-rounded" colorScheme="gray" mt={2}>
         <TabList>
           {tabsConfig.map((tabs, index) => (
             <Tab key={index} display="flex" gap={3} alignItems="center">

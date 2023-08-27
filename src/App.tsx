@@ -1,5 +1,6 @@
 import { Box, ChakraProvider } from '@chakra-ui/react';
 
+import ContactMe from './components/ContactMe';
 import Home from './pages/Home';
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
         }}
       >
         <Home />
+        <ContactMe />
       </Box>
     </ChakraProvider>
   );

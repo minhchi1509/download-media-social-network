@@ -12,3 +12,7 @@ export const facebookFormValidation = Yup.object({
   postURL: Yup.string().trim().required('Vui lòng nhập URL bài viết!'),
   postMode: Yup.string().required('Vui lòng chọn chế độ của bài viết!')
 });
+
+export const douyinFormValidation = Yup.object({
+  postURL: Yup.string().trim().required('Vui lòng nhập URL của video')
+});

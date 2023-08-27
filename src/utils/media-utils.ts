@@ -1,15 +1,7 @@
 import { load } from 'cheerio';
-import { v4 as uuidv4 } from 'uuid';
 
 import { IMedia } from 'src/interfaces/media-interfaces';
-import { getDownloadInstagramMediaBlob } from 'src/services/media-download-services';
-
-export const downloadMediaFile = (downloadURL: string) => {
-  const downloadLink = document.createElement('a');
-  downloadLink.href = downloadURL;
-  downloadLink.download = uuidv4();
-  downloadLink.click();
-};
+import { convertToBlobFile } from 'src/services/media-download-services';
 
 export const getUnBlockedInstagramMediaUrl = (originUrl: any) => {
   const newUrl = new URL(originUrl);
@@ -26,6 +18,12 @@ export const getInstagramAPIURL = (postUrl: string) => {
   return '';
 };
 
+export const getDouyinMediaURL = (originURL: string) => {
+  const regex = /(https:\/\/[^\s]+)/;
+  const match = originURL.match(regex);
+  return match?.[0] || '';
+};
+
 export const formatInstagramMediaData = async (
   data: any
 ): Promise<IMedia[]> => {
@@ -38,7 +36,7 @@ export const formatInstagramMediaData = async (
         ? media.image_versions2.candidates[0].url
         : media.video_versions[0].url
     );
-    const blobFile = await getDownloadInstagramMediaBlob(previewURL);
+    const blobFile = await convertToBlobFile(previewURL);
     const downloadURL = URL.createObjectURL(blobFile);
     return {
       type,
@@ -86,5 +84,65 @@ export const formatFacebookMediaData = (data: string): IMedia => {
     type: 'video',
     video: { previewURL: videoPreviewURL, downloadURL: videoDownloadURL },
     audio
+  };
+};
+
+export const formatDouyinMediaData = async (data: any): Promise<IMedia[]> => {
+  let results: IMedia[] = [];
+
+  const audioDownloadURL = URL.createObjectURL(
+    await convertToBlobFile(
+      data.music.play_url.url_list[0] ||
+        JSON.parse(data.music.extra).original_song_url
+    )
+  );
+
+  const getImageMediaDetail = async (media: any): Promise<IMedia> => {
+    const previewURL = media.url_list.pop();
+    const blobFile = await convertToBlobFile(previewURL);
+    const downloadURL = URL.createObjectURL(blobFile);
+    return {
+      type: 'image',
+      image: { previewURL, downloadURL }
+    };
+  };
+
+  if (data.media_type === 4) {
+    results = [
+      {
+        type: 'videoNotPlay',
+        video: {
+          previewURL: data.video.origin_cover.url_list.pop(),
+          downloadURL: data.video.play_addr.url_list[0]
+        }
+      }
+    ];
+  } else {
+    results = [
+      ...(await Promise.all(
+        data.images.map((image: any) => getImageMediaDetail(image))
+      ))
+    ];
+  }
+  return results.map((res) => ({
+    ...res,
+    audio: { downloadURL: audioDownloadURL }
+  }));
+};
+
+export const formatTiktokMediaData = async (
+  videoURL: string,
+  audioURL: string
+): Promise<IMedia> => {
+  const videoDownloadURL = URL.createObjectURL(
+    await convertToBlobFile(videoURL)
+  );
+  const audioDownloadURL = URL.createObjectURL(
+    await convertToBlobFile(audioURL)
+  );
+  return {
+    type: 'video',
+    video: { previewURL: videoURL, downloadURL: videoDownloadURL },
+    audio: { downloadURL: audioDownloadURL }
   };
 };

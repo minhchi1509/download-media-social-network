@@ -3,7 +3,7 @@ export interface IMediaDetail {
   downloadURL: string;
 }
 export interface IMedia {
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'videoNotPlay';
   image?: IMediaDetail;
   video?: IMediaDetail;
   audio?: Pick<IMediaDetail, 'downloadURL'>;
@@ -17,4 +17,13 @@ export interface IDownloadFacebookMediaBodyRequest {
 export interface IDownloadFacebookMediaResponse {
   data: string;
   mess?: string;
+}
+
+export interface IDownloadDouyinMediaBodyRequest {
+  url: string;
+}
+
+export interface IDownloadTiktokMediaParamsRequest {
+  url: string;
+  hd: number;
 }
