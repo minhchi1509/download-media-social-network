@@ -3,7 +3,7 @@
     "strict": true,
     "target": "ESNext",
     "module": "ESNext",
-    "outDir": "build",
+    "outDir": "dist",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "importHelpers": true,
