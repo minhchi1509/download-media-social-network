@@ -79,9 +79,8 @@ const InstgramDownload = () => {
         đăng nhập tài khoản Instgram trên trình duyệt!
       </Alert>
       <Input
-        label="Bước 1: Dán đường link bài viết vào đây. Hãy đảm bảo link bài viết là
-        hợp lệ"
-        placeholder="Link bài viết"
+        label="Bước 1: Dán đường link bài viết/story vào đây. Hãy đảm bảo đường dẫn là hợp lệ!"
+        placeholder="Link bài viết/story"
         onChange={handleChange}
         name="postURL"
         value={values.postURL}
