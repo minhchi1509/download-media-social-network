@@ -12,7 +12,7 @@ import Textarea from 'src/components/Textarea';
 import { useShowToast } from 'src/hooks/useShowToast';
 import { IForm } from 'src/interfaces/form-interfaces';
 import { IMedia } from 'src/interfaces/media-interfaces';
-import { getDownloadFacebookMediaResponse } from 'src/services/media-download-services';
+import { getFacebookMedia } from 'src/services/media-download-services';
 import { formatFacebookMediaData } from 'src/utils/media-utils';
 import { facebookFormValidation } from 'src/utils/validation-utils';
 import { postModeList } from 'src/variables/constants';
@@ -37,7 +37,7 @@ const FacebookDownload = () => {
       const body = new FormData();
       body.append('q', values.postURL);
       body.append('html', values.jsonData);
-      const response = await getDownloadFacebookMediaResponse(body);
+      const response = await getFacebookMedia(body);
       if (response.mess) {
         throw errors;
       }

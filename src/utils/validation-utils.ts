@@ -5,7 +5,8 @@ export const instagramFormValidation = Yup.object().shape({
     .trim()
     .required(
       'Vui lòng copy và paste toàn bộ nội dung của URL đã mở ở trình duyệt!'
-    )
+    ),
+  mediaBelongsTo: Yup.string().required('Vui lòng chọn!')
 });
 
 export const facebookFormValidation = Yup.object({

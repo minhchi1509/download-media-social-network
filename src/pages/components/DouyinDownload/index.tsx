@@ -6,7 +6,7 @@ import Input from 'src/components/Input';
 import MediaCard from 'src/components/MediaCard';
 import { useShowToast } from 'src/hooks/useShowToast';
 import { IMedia } from 'src/interfaces/media-interfaces';
-import { getDownloadDouyinMediaResponse } from 'src/services/media-download-services';
+import { getDouyinMedia } from 'src/services/media-download-services';
 import {
   formatDouyinMediaData,
   getDouyinMediaURL
@@ -22,7 +22,7 @@ const DouyinDownload = () => {
     const url = getDouyinMediaURL(values.postURL);
     try {
       setIsGettingData(true);
-      const data = await getDownloadDouyinMediaResponse({ url });
+      const data = await getDouyinMedia({ url });
       const mediaItems = await formatDouyinMediaData(data.aweme_detail);
       setMediaList(mediaItems);
       showToast('success', 'Lấy dữ liệu thành công!');

@@ -2,28 +2,30 @@ export interface IMediaDetail {
   previewURL: string;
   downloadURL: string;
 }
+
+export type TMediaType = 'image' | 'video' | 'videoNotPlay';
 export interface IMedia {
-  type: 'image' | 'video' | 'videoNotPlay';
+  type: TMediaType;
   image?: IMediaDetail;
   video?: IMediaDetail;
   audio?: Pick<IMediaDetail, 'downloadURL'>;
 }
 
-export interface IDownloadFacebookMediaBodyRequest {
-  q: string;
-  html?: string;
+export interface IGetStoryInstagramApiUrlResponse {
+  status: string;
+  data: string;
 }
 
-export interface IDownloadFacebookMediaResponse {
+export interface IGetFacebookMediaResponse {
   data: string;
   mess?: string;
 }
 
-export interface IDownloadDouyinMediaBodyRequest {
+export interface IGetDouyinMediaBodyRequest {
   url: string;
 }
 
-export interface IDownloadTiktokMediaParamsRequest {
+export interface IGetTiktokMediaParamsRequest {
   url: string;
   hd: number;
 }

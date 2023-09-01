@@ -1,17 +1,23 @@
 import HttpRequest from 'src/config/HttpRequest-config';
 import {
-  IDownloadDouyinMediaBodyRequest,
-  IDownloadFacebookMediaResponse,
-  IDownloadTiktokMediaParamsRequest
+  IGetDouyinMediaBodyRequest,
+  IGetFacebookMediaResponse,
+  IGetStoryInstagramApiUrlResponse,
+  IGetTiktokMediaParamsRequest
 } from 'src/interfaces/media-interfaces';
 
-export const convertToBlobFile = async (url: string) => {
-  const response = await HttpRequest.get<Blob>(url, { responseType: 'blob' });
+export const getInstagramStoryAPIURL = async (body: FormData) => {
+  const response = await HttpRequest.post<IGetStoryInstagramApiUrlResponse>(
+    `${import.meta.env.VITE_WORKER_URL}/${
+      import.meta.env.VITE_INSTAGRAM_STORY_API_URL
+    }`,
+    body
+  );
   return response.data;
 };
 
-export const getDownloadFacebookMediaResponse = async (body: FormData) => {
-  const response = await HttpRequest.post<IDownloadFacebookMediaResponse>(
+export const getFacebookMedia = async (body: FormData) => {
+  const response = await HttpRequest.post<IGetFacebookMediaResponse>(
     `${import.meta.env.VITE_WORKER_URL}/${
       import.meta.env.VITE_FACEBOOK_MEDIA_API_URL
     }`,
@@ -20,9 +26,7 @@ export const getDownloadFacebookMediaResponse = async (body: FormData) => {
   return response.data;
 };
 
-export const getDownloadDouyinMediaResponse = async (
-  body: IDownloadDouyinMediaBodyRequest
-) => {
+export const getDouyinMedia = async (body: IGetDouyinMediaBodyRequest) => {
   const response = await HttpRequest.post(
     import.meta.env.VITE_DOUYIN_MEDIA_API_URL,
     body,
@@ -35,9 +39,7 @@ export const getDownloadDouyinMediaResponse = async (
   return response.data;
 };
 
-export const getDownloadTiktokMediaResponse = async (
-  params: IDownloadTiktokMediaParamsRequest
-) => {
+export const getTiktokMedia = async (params: IGetTiktokMediaParamsRequest) => {
   const response = await HttpRequest.get(
     import.meta.env.VITE_TIKTOK_MEDIA_API_URL,
     {

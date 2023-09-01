@@ -1,15 +1,43 @@
 import { load } from 'cheerio';
 
-import { IMedia } from 'src/interfaces/media-interfaces';
-import { convertToBlobFile } from 'src/services/media-download-services';
+import HttpRequest from 'src/config/HttpRequest-config';
+import { IMedia, TMediaType } from 'src/interfaces/media-interfaces';
 
-export const getUnBlockedInstagramMediaUrl = (originUrl: any) => {
+export const convertToBlobFile = async (url: string) => {
+  const response = await HttpRequest.get<Blob>(url, { responseType: 'blob' });
+  return response.data;
+};
+
+export const convertToMediaObject = async (
+  type: TMediaType,
+  previewURL: string,
+  haveAudio = false,
+  audioOriginURL = ''
+): Promise<IMedia> => {
+  const downloadURL = URL.createObjectURL(await convertToBlobFile(previewURL));
+  let results: IMedia = {
+    type,
+    [type === 'video' ? 'video' : 'image']: {
+      downloadURL,
+      previewURL
+    }
+  };
+  if (haveAudio) {
+    const downloadAudioURL = URL.createObjectURL(
+      await convertToBlobFile(audioOriginURL)
+    );
+    results = { ...results, audio: { downloadURL: downloadAudioURL } };
+  }
+  return results;
+};
+
+export const getUnBlockedInstagramMediaUrl = (originUrl: string) => {
   const newUrl = new URL(originUrl);
   newUrl.hostname = 'scontent.cdninstagram.com';
   return `${import.meta.env.VITE_WORKER_URL}/${newUrl.toString()}`;
 };
 
-export const getInstagramAPIURL = (postUrl: string) => {
+export const getInstagramPostAPIURL = (postUrl: string) => {
   const regex = /\/(p|reel)\/([A-Za-z0-9-_]+)/;
   const match = postUrl.match(regex);
   if (match && match.length >= 3) {
@@ -25,34 +53,58 @@ export const getDouyinMediaURL = (originURL: string) => {
 };
 
 export const formatInstagramMediaData = async (
+  mediaBelongsTo: 'post' | 'story',
   data: any
 ): Promise<IMedia[]> => {
   let results: IMedia[] = [];
-
-  const getMediaDetail = async (media: any): Promise<IMedia> => {
-    const type = media.media_type === 1 ? 'image' : 'video';
-    const previewURL = getUnBlockedInstagramMediaUrl(
-      type === 'image'
-        ? media.image_versions2.candidates[0].url
-        : media.video_versions[0].url
+  if (mediaBelongsTo === 'post') {
+    const targetData = data.items[0];
+    if (
+      !targetData.carousel_media &&
+      !targetData.image_versions2.candidates[0].url &&
+      !targetData.video_versions[0].url
+    ) {
+      throw new Error('Can not find media');
+    }
+    //Nếu bài viết có từ 2 ảnh/video trở lên
+    if (targetData.carousel_media) {
+      results = await Promise.all(
+        targetData.carousel_media.map((mediaItem: any) => {
+          const type = mediaItem.media_type === 1 ? 'image' : 'video';
+          const previewURL = getUnBlockedInstagramMediaUrl(
+            type === 'image'
+              ? mediaItem.image_versions2.candidates[0].url
+              : mediaItem.video_versions[0].url
+          );
+          return convertToMediaObject(type, previewURL);
+        })
+      );
+    } else {
+      const type = targetData.media_type === 1 ? 'image' : 'video';
+      const previewURL = getUnBlockedInstagramMediaUrl(
+        type === 'image'
+          ? targetData.image_versions2.candidates[0].url
+          : targetData.video_versions[0].url
+      );
+      results = [await convertToMediaObject(type, previewURL)];
+    }
+  } else {
+    const storyMediaList = data?.data?.reels_media[0]?.items;
+    if (!storyMediaList) {
+      throw new Error('Can not find media');
+    }
+    results = await Promise.all(
+      storyMediaList.map((mediaItem: any) => {
+        const type = mediaItem.is_video ? 'video' : 'image';
+        const previewURL = getUnBlockedInstagramMediaUrl(
+          type === 'video'
+            ? mediaItem.video_resources[0].src
+            : mediaItem.display_url
+        );
+        return convertToMediaObject(type, previewURL);
+      })
     );
-    const blobFile = await convertToBlobFile(previewURL);
-    const downloadURL = URL.createObjectURL(blobFile);
-    return {
-      type,
-      [type]: { downloadURL, previewURL }
-    };
-  };
-
-  results =
-    data.carousel_media !== undefined
-      ? [
-          ...(await Promise.all(
-            data.carousel_media.map((media: any) => getMediaDetail(media))
-          ))
-        ]
-      : [await getMediaDetail(data)];
-
+  }
   return results;
 };
 

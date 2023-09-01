@@ -6,7 +6,7 @@ import Input from 'src/components/Input';
 import MediaCard from 'src/components/MediaCard';
 import { useShowToast } from 'src/hooks/useShowToast';
 import { IMedia } from 'src/interfaces/media-interfaces';
-import { getDownloadTiktokMediaResponse } from 'src/services/media-download-services';
+import { getTiktokMedia } from 'src/services/media-download-services';
 import { formatTiktokMediaData } from 'src/utils/media-utils';
 import { douyinFormValidation } from 'src/utils/validation-utils';
 
@@ -19,7 +19,7 @@ const TiktokDownload = () => {
     const url = values.postURL;
     try {
       setIsGettingData(true);
-      const data = await getDownloadTiktokMediaResponse({ url, hd: 1 });
+      const data = await getTiktokMedia({ url, hd: 1 });
       const videoURL = data.hdplay || data.play || data.wmplay;
       const audioURL = data.music;
       const mediaItem = await formatTiktokMediaData(videoURL, audioURL);

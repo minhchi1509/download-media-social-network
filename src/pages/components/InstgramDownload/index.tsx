@@ -5,34 +5,30 @@ import React from 'react';
 
 import Input from 'src/components/Input';
 import MediaCard from 'src/components/MediaCard';
+import RadioSelect from 'src/components/RadioSelect';
 import Textarea from 'src/components/Textarea';
 import { useShowToast } from 'src/hooks/useShowToast';
 import { IForm } from 'src/interfaces/form-interfaces';
 import { IMedia } from 'src/interfaces/media-interfaces';
+import { getInstagramStoryAPIURL } from 'src/services/media-download-services';
 import {
   formatInstagramMediaData,
-  getInstagramAPIURL
+  getInstagramPostAPIURL
 } from 'src/utils/media-utils';
 import { instagramFormValidation } from 'src/utils/validation-utils';
-import { instagramURLRegex } from 'src/variables/constants';
+import { mediaBelongsToList } from 'src/variables/constants';
 
 const InstgramDownload = () => {
   const { showToast } = useShowToast();
   const [isGettingData, setIsGettingData] = React.useState<boolean>(false);
+  const [isGettingAPIURL, setIsGettingAPIURL] = React.useState<boolean>(false);
   const [mediaList, setMediaList] = React.useState<IMedia[]>([]);
 
-  const handleSubmitForm = async ({ jsonData }: IForm) => {
+  const handleSubmitForm = async ({ mediaBelongsTo, jsonData }: IForm) => {
     try {
       setIsGettingData(true);
-      const data = JSON.parse(jsonData).items[0];
-      if (
-        !data.carousel_media &&
-        !data.image_versions2.candidates[0].url &&
-        !data.video_versions[0].url
-      ) {
-        throw errors;
-      }
-      const mediaItems = await formatInstagramMediaData(data);
+      const data = JSON.parse(jsonData);
+      const mediaItems = await formatInstagramMediaData(mediaBelongsTo!, data);
       setMediaList(mediaItems);
       showToast('success', 'Lấy dữ liệu thành công!');
     } catch (error) {
@@ -47,25 +43,40 @@ const InstgramDownload = () => {
       initialValues: {
         postURL: '',
         apiURL: '',
+        mediaBelongsTo: undefined,
         jsonData: ''
       },
       validationSchema: instagramFormValidation,
       onSubmit: handleSubmitForm
     });
 
-  React.useEffect(() => {
-    if (instagramURLRegex.test(values.postURL.trim())) {
-      setFieldValue('apiURL', getInstagramAPIURL(values.postURL));
-    } else {
-      setFieldValue('apiURL', '');
+  const handleBlur = async () => {
+    const { postURL } = values;
+    if (!postURL.includes('instagram.com')) {
+      return;
     }
-  }, [values.postURL, touched.postURL, setFieldValue]);
+    try {
+      setIsGettingAPIURL(true);
+      if (postURL.includes('stories') && !postURL.includes('highlights')) {
+        const body = new FormData();
+        body.append('l', values.postURL);
+        const { data } = await getInstagramStoryAPIURL(body);
+        setFieldValue('apiURL', data);
+      } else {
+        setFieldValue('apiURL', getInstagramPostAPIURL(values.postURL));
+      }
+    } catch (error) {
+    } finally {
+      setIsGettingAPIURL(false);
+    }
+  };
 
   return (
     <Box display="flex" flexDirection="column" gap={3}>
       <Alert status="warning" borderRadius={10} mb={2}>
         <AlertIcon />
-        Hãy đảm bảo rằng bạn đã đăng nhập tài khoản Instgram trên trình duyệt!
+        Tính năng chỉ áp dụng cho bài viết và story. Hãy đảm bảo rằng bạn đã
+        đăng nhập tài khoản Instgram trên trình duyệt!
       </Alert>
       <Input
         label="Bước 1: Dán đường link bài viết vào đây. Hãy đảm bảo link bài viết là
@@ -74,6 +85,15 @@ const InstgramDownload = () => {
         onChange={handleChange}
         name="postURL"
         value={values.postURL}
+        onBlur={handleBlur}
+      />
+      <RadioSelect
+        label="Loại:"
+        options={mediaBelongsToList}
+        name="mediaBelongsTo"
+        value={values.mediaBelongsTo}
+        onChange={handleChange('mediaBelongsTo')}
+        errorText={touched.mediaBelongsTo && errors.mediaBelongsTo}
       />
       <Box display="flex" gap={2}>
         <Input
@@ -86,7 +106,7 @@ const InstgramDownload = () => {
         <Button
           colorScheme="teal"
           onClick={() => window.open(values.apiURL, '_blank')}
-          isDisabled={!values.apiURL}
+          isDisabled={!values.apiURL || isGettingAPIURL}
           alignSelf="flex-end"
         >
           Mở
