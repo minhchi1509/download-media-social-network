@@ -4,7 +4,7 @@ import { useFormik } from 'formik';
 import React from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
-import { TickIcon } from 'src/assets/icons/index';
+import { TickIcon } from 'src/assets/icons';
 import Input from 'src/components/Input';
 import MediaCard from 'src/components/MediaCard';
 import RadioSelect from 'src/components/RadioSelect';
