@@ -139,47 +139,20 @@ export const formatFacebookMediaData = (data: string): IMedia => {
   };
 };
 
-export const formatDouyinMediaData = async (data: any): Promise<IMedia[]> => {
-  let results: IMedia[] = [];
-
-  const audioDownloadURL = URL.createObjectURL(
-    await convertToBlobFile(
-      data.music.play_url.url_list[0] ||
-        JSON.parse(data.music.extra).original_song_url
-    )
-  );
-
-  const getImageMediaDetail = async (media: any): Promise<IMedia> => {
-    const previewURL = media.url_list.pop();
-    const blobFile = await convertToBlobFile(previewURL);
-    const downloadURL = URL.createObjectURL(blobFile);
-    return {
-      type: 'image',
-      image: { previewURL, downloadURL }
-    };
-  };
-
-  if (data.media_type === 4) {
-    results = [
-      {
-        type: 'videoNotPlay',
-        video: {
-          previewURL: data.video.origin_cover.url_list.pop(),
-          downloadURL: data.video.play_addr.url_list[0]
-        }
+export const formatDouyinMediaData = (data: any): IMedia[] => {
+  const results: IMedia[] = [
+    {
+      type: 'videoNotPlay',
+      video: {
+        previewURL: data.thumbnail,
+        downloadURL: data.medias[0].url
+      },
+      audio: {
+        downloadURL: data.medias.pop().url
       }
-    ];
-  } else {
-    results = [
-      ...(await Promise.all(
-        data.images.map((image: any) => getImageMediaDetail(image))
-      ))
-    ];
-  }
-  return results.map((res) => ({
-    ...res,
-    audio: { downloadURL: audioDownloadURL }
-  }));
+    }
+  ];
+  return results;
 };
 
 export const formatTiktokMediaData = async (

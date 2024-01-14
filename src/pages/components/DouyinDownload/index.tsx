@@ -23,7 +23,7 @@ const DouyinDownload = () => {
     try {
       setIsGettingData(true);
       const data = await getDouyinMedia({ url });
-      const mediaItems = await formatDouyinMediaData(data.aweme_detail);
+      const mediaItems = formatDouyinMediaData(data.data);
       setMediaList(mediaItems);
       showToast('success', 'Lấy dữ liệu thành công!');
     } catch (error) {
