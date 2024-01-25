@@ -1,3 +1,3 @@
-import TickIcon from './tick.svg';
+import TickIcon from './tick.svg?react';
 
 export { TickIcon };
